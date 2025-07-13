@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/0x4D31/fingerproxy"
+	"github.com/0x4D31/fingerproxy/pkg/fingerprint"
+	"github.com/0x4D31/fingerproxy/pkg/ja3"
+	"github.com/0x4D31/fingerproxy/pkg/metadata"
+	"github.com/0x4D31/fingerproxy/pkg/reverseproxy"
 	"github.com/dreadl0ck/tlsx"
-	"github.com/wi1dcard/fingerproxy"
-	"github.com/wi1dcard/fingerproxy/pkg/fingerprint"
-	"github.com/wi1dcard/fingerproxy/pkg/ja3"
-	"github.com/wi1dcard/fingerproxy/pkg/metadata"
-	"github.com/wi1dcard/fingerproxy/pkg/reverseproxy"
 )
 
 func main() {

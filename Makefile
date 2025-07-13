@@ -30,7 +30,7 @@ build_%:
 sha256sum:
 	cd $(BINDIR) && sha256sum $(TARGET)_* > $(TARGET).sha256sum
 
-PKG_LIST = $(shell go list ./... | grep -v github.com/wi1dcard/fingerproxy/pkg/http2)
+PKG_LIST = $(shell go list ./... | grep -v github.com/0x4D31/fingerproxy/pkg/http2)
 test:
 	@go test -v $(PKG_LIST)
 

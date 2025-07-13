@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/0x4D31/fingerproxy/pkg/metadata"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/wi1dcard/fingerproxy/pkg/metadata"
 )
 
 const defaultMetricsPrefix = "fingerproxy"

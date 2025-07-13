@@ -13,6 +13,8 @@ Client ---------> Fingerproxy   -------------------------------------->  HTTP Ba
 
 Fingerprints can be used for bot detection, DDoS mitigation, client identification, etc. To use these fingerprints, just extract the HTTP request headers in your backend apps.
 
+JA4 fingerprints now distinguish TLS vs QUIC automatically. When the metadata `IsQUIC` field is set, `JA4Fingerprint` prefixes the result with `q` instead of `t`.
+
 Fingerproxy is also a Go library, which allows users implementing their own fingerprinting algorithm.
 
 ## Usage

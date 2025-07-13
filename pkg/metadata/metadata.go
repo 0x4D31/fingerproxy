@@ -18,4 +18,7 @@ type Metadata struct {
 
 	// HTTP2Frames includes certain HTTP2 frames data
 	HTTP2Frames HTTP2FingerprintingFrames
+
+	// IsQUIC indicates the handshake came over QUIC/UDP.
+	IsQUIC bool
 }

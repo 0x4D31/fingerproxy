@@ -34,7 +34,11 @@ func vlogf(format string, args ...any) {
 // JA4Fingerprint is a FingerprintFunc
 func JA4Fingerprint(data *metadata.Metadata) (string, error) {
 	fp := &ja4.JA4Fingerprint{}
-	err := fp.UnmarshalBytes(data.ClientHelloRecord, 't') // TODO: identify connection protocol
+	proto := byte('t')
+	if data.IsQUIC {
+		proto = 'q'
+	}
+	err := fp.UnmarshalBytes(data.ClientHelloRecord, proto)
 	if err != nil {
 		return "", fmt.Errorf("ja4: %w", err)
 	}

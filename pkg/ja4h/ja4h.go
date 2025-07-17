@@ -14,16 +14,14 @@ import (
 func FromRequest(req *http.Request, orderedHeaderNames []string) string {
 	a := buildA(req, orderedHeaderNames)
 	b := buildB(orderedHeaderNames)
-	c, d := buildCD(req.Cookies())
+	c, d := buildCD(req.Header["Cookie"])
 	return fmt.Sprintf("%s_%s_%s_%s", a, b, c, d)
 }
 
 func buildA(req *http.Request, ordered []string) string {
 	// positions 1-2: method
 	method := strings.ToLower(req.Method)
-	if len(method) < 2 {
-		method = (method + "00")[:2]
-	} else {
+	if len(method) >= 2 {
 		method = method[:2]
 	}
 
@@ -86,14 +84,14 @@ func buildA(req *http.Request, ordered []string) string {
 }
 
 func buildB(ordered []string) string {
-	var names strings.Builder
+	list := make([]string, 0, len(ordered))
 	for _, h := range ordered {
 		if h == "cookie" || h == "referer" {
 			continue
 		}
-		names.WriteString(h)
+		list = append(list, h)
 	}
-	s := names.String()
+	s := strings.Join(list, ",")
 	if s == "" {
 		return strings.Repeat("0", 12)
 	}
@@ -101,28 +99,38 @@ func buildB(ordered []string) string {
 	return fmt.Sprintf("%x", sum)[:12]
 }
 
-func buildCD(cookies []*http.Cookie) (string, string) {
-	if len(cookies) == 0 {
+func buildCD(cookieHeaders []string) (string, string) {
+	if len(cookieHeaders) == 0 {
 		zeros := strings.Repeat("0", 12)
 		return zeros, zeros
 	}
-	names := make([]string, 0, len(cookies))
-	namevals := make([]string, 0, len(cookies))
-	for _, c := range cookies {
-		names = append(names, c.Name)
-		namevals = append(namevals, c.Name+c.Value)
+
+	var names []string
+	var namevals []string
+	for _, line := range cookieHeaders {
+		parts := strings.Split(line, ";")
+		for _, p := range parts {
+			p = strings.TrimSpace(p)
+			if p == "" {
+				continue
+			}
+			kv := strings.SplitN(p, "=", 2)
+			name := kv[0]
+			value := ""
+			if len(kv) == 2 {
+				value = kv[1]
+			}
+			names = append(names, name)
+			namevals = append(namevals, name+"="+value)
+		}
 	}
+
 	sort.Strings(names)
 	sort.Strings(namevals)
-	var nb strings.Builder
-	for _, n := range names {
-		nb.WriteString(n)
-	}
-	var nv strings.Builder
-	for _, nvstr := range namevals {
-		nv.WriteString(nvstr)
-	}
-	hashNames := sha256.Sum256([]byte(nb.String()))
-	hashNV := sha256.Sum256([]byte(nv.String()))
+
+	joinedNames := strings.Join(names, ",")
+	joinedNV := strings.Join(namevals, ",")
+	hashNames := sha256.Sum256([]byte(joinedNames))
+	hashNV := sha256.Sum256([]byte(joinedNV))
 	return fmt.Sprintf("%x", hashNames)[:12], fmt.Sprintf("%x", hashNV)[:12]
 }

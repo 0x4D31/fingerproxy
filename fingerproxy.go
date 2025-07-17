@@ -63,6 +63,7 @@ func DefaultHeaderInjectors() []reverseproxy.HeaderInjector {
 	return []reverseproxy.HeaderInjector{
 		fp.NewFingerprintHeaderInjector("X-JA3-Fingerprint", fp.JA3Fingerprint),
 		fp.NewFingerprintHeaderInjector("X-JA4-Fingerprint", fp.JA4Fingerprint),
+		fp.NewJA4HFingerprintHeaderInjector("X-JA4H-Fingerprint"),
 		fp.NewFingerprintHeaderInjector("X-HTTP2-Fingerprint", h2fp.HTTP2Fingerprint),
 	}
 }

@@ -146,7 +146,14 @@ func (server *Server) tlsHandshakeWithTimeout(tlsConn *tls.Conn) error {
 
 func updateConnContext(ctx context.Context, c net.Conn) context.Context {
 	ctx, md := metadata.NewContext(ctx)
-	if conn, ok := c.(*hack.TLSClientHelloConn); ok {
+	switch conn := c.(type) {
+	case *hack.HTTP1HeaderConn:
+		md.OrderedHTTP1Headers = conn.OrderedHeaders()
+		if ch, ok := conn.Conn.(*hack.TLSClientHelloConn); ok {
+			md.ClientHelloRecord = ch.ClientHelloRecord
+			md.ConnectionState = ch.Conn.ConnectionState()
+		}
+	case *hack.TLSClientHelloConn:
 		md.ClientHelloRecord = conn.ClientHelloRecord
 		md.ConnectionState = conn.Conn.ConnectionState()
 	}
@@ -154,7 +161,8 @@ func updateConnContext(ctx context.Context, c net.Conn) context.Context {
 }
 
 func (server *Server) serveHTTP1() {
-	err := server.HTTPServer.Serve(server.http1ConnChannelListener)
+	ln := hack.NewHTTP1HeaderListener(server.http1ConnChannelListener)
+	err := server.HTTPServer.Serve(ln)
 
 	if errors.Is(err, context.Canceled) {
 		// hack.ChannelListener.Accept() returns context canceled,

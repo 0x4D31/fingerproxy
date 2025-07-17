@@ -21,4 +21,9 @@ type Metadata struct {
 
 	// IsQUIC indicates the handshake came over QUIC/UDP.
 	IsQUIC bool
+
+	// OrderedHTTP1Headers lists request header names in the order they
+	// were received for HTTP/1.x connections. Names are lower-case and
+	// may appear multiple times if the client sent duplicates.
+	OrderedHTTP1Headers []string
 }

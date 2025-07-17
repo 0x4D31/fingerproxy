@@ -25,6 +25,7 @@ type detailResponse struct {
 	JA3       *ja3Detail         `json:"ja3"`
 	JA3Raw    string             `json:"ja3_raw"`
 	JA4       *ja4Detail         `json:"ja4"`
+	Headers   []string           `json:"ordered_headers"`
 }
 
 func (r *echoResponse) fingerprintJA3() error {

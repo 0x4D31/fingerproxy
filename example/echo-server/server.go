@@ -28,6 +28,7 @@ func echoServer(w http.ResponseWriter, req *http.Request) {
 		Detail: &detailResponse{
 			Metadata:  data,
 			UserAgent: req.UserAgent(),
+			Headers:   data.OrderedHTTP1Headers,
 		},
 	}
 

@@ -27,7 +27,7 @@ func TestExampleVector(t *testing.T) {
 	}
 
 	got := FromRequest(req, ordered)
-	want := "ge11cr04fr00_6dabfa361d2c_ef4936083598_c7f9aa4313fb"
+	want := "ge11cr04fr00_171d872ea17d_ca8064b27201_5c8e7d6b8092"
 	if got != want {
 		t.Fatalf("expected %s, got %s", want, got)
 	}

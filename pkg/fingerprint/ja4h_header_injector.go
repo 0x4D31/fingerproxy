@@ -37,8 +37,13 @@ func (i *JA4HFingerprintHeaderInjector) GetHeaderValue(req *http.Request) (strin
 		return "", fmt.Errorf("failed to get context")
 	}
 
+	ordered := data.OrderedHTTP1Headers
+	if req.ProtoMajor == 2 {
+		ordered = data.OrderedHTTP2Headers
+	}
+
 	start := time.Now()
-	fp := ja4h.FromRequest(req, data.OrderedHTTP1Headers)
+	fp := ja4h.FromRequest(req, ordered)
 	duration := time.Since(start)
 	vlogf("fingerprint duration: %s", duration)
 

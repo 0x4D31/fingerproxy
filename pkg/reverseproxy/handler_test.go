@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"net/http/httptest"
 	"net/http/httputil"
 	"net/url"
 	"strings"
@@ -43,11 +44,23 @@ func dummyRequest(t *testing.T) *http.Request {
 }
 
 func dummyURL(t *testing.T) *url.URL {
-	url, err := url.Parse("https://httpbin.org")
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		headerStrings := map[string]string{}
+		for k, v := range r.Header {
+			headerStrings[k] = strings.Join(v, ", ")
+		}
+		headerStrings["Host"] = r.Host
+		resp := struct {
+			Headers map[string]string `json:"headers"`
+		}{Headers: headerStrings}
+		json.NewEncoder(w).Encode(resp)
+	}))
+	t.Cleanup(srv.Close)
+	u, err := url.Parse(srv.URL)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return url
+	return u
 }
 
 func TestKubernetesLivenessProbe(t *testing.T) {
@@ -77,7 +90,8 @@ func (i *dummyHeaderInjector) GetHeaderValue(req *http.Request) (string, error) 
 
 func TestInjectHeader(t *testing.T) {
 	hj := &dummyHeaderInjector{}
-	handler := NewHTTPHandler(dummyURL(t), &httputil.ReverseProxy{}, []HeaderInjector{hj})
+	u := dummyURL(t)
+	handler := NewHTTPHandler(u, &httputil.ReverseProxy{}, []HeaderInjector{hj})
 
 	w := &dummyResponseWriter{}
 	handler.ServeHTTP(w, dummyRequest(t))
@@ -96,8 +110,8 @@ func TestInjectHeader(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if j.Headers.Host != "httpbin.org" {
-		t.Fatalf("expected header value %s, actual %s", "httpbin.org", j.Headers.Host)
+	if j.Headers.Host != u.Host {
+		t.Fatalf("expected header value %s, actual %s", u.Host, j.Headers.Host)
 	}
 
 	if j.Headers.Dummy != "dummy-value" {

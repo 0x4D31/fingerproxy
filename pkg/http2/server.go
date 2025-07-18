@@ -1626,11 +1626,13 @@ func (sc *serverConn) processFrame(f Frame) error {
 		return sc.processSettings(f)
 	case *MetaHeadersFrame:
 		if md, ok := metadata.FromContext(sc.baseCtx); ok {
-			headers := []metadata.HeaderField{}
-			for _, h := range f.Fields {
-				headers = append(headers, metadata.HeaderField(h))
+			if len(md.HTTP2Frames.Headers) == 0 {
+				headers := []metadata.HeaderField{}
+				for _, h := range f.Fields {
+					headers = append(headers, metadata.HeaderField(h))
+				}
+				md.HTTP2Frames.Headers = headers
 			}
-			md.HTTP2Frames.Headers = headers
 			if len(md.OrderedHTTP2Headers) == 0 {
 				for _, h := range f.Fields {
 					if strings.HasPrefix(h.Name, ":") {

@@ -26,9 +26,4 @@ type Metadata struct {
 	// were received for HTTP/1.x connections. Names are lower-case and
 	// may appear multiple times if the client sent duplicates.
 	OrderedHTTP1Headers []string
-
-	// OrderedHTTP2Headers lists request header names in the order they
-	// were received for HTTP/2 connections. Names are lower-case and
-	// exclude pseudo headers.
-	OrderedHTTP2Headers []string
 }

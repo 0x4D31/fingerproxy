@@ -38,8 +38,8 @@ func (i *JA4HFingerprintHeaderInjector) GetHeaderValue(req *http.Request) (strin
 	}
 
 	ordered := data.OrderedHTTP1Headers
-	if req.ProtoMajor == 2 {
-		ordered = data.OrderedHTTP2Headers
+	if len(ordered) == 0 {
+		ordered = data.HTTP2Frames.OrderedHeaders()
 	}
 
 	start := time.Now()

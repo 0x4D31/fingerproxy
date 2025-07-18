@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"strings"
 )
 
 // https://github.com/golang/net/blob/5a444b4f2fe893ea00f0376da46aa5376c3f3e28/http2/http2.go#L112-L119
@@ -42,6 +43,20 @@ type HTTP2FingerprintingFrames struct {
 
 func (f *HTTP2FingerprintingFrames) String() string {
 	return f.Marshal(math.MaxUint)
+}
+
+// OrderedHeaders returns the HTTP/2 header names in the order they were
+// received. Pseudo headers (starting with a colon) are skipped. Header names
+// are lower-cased and duplicates are preserved.
+func (f *HTTP2FingerprintingFrames) OrderedHeaders() []string {
+	names := make([]string, 0, len(f.Headers))
+	for _, h := range f.Headers {
+		if len(h.Name) > 0 && h.Name[0] == ':' {
+			continue
+		}
+		names = append(names, strings.ToLower(h.Name))
+	}
+	return names
 }
 
 // TODO: add tests

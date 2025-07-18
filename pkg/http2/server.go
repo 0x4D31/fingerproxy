@@ -1633,15 +1633,6 @@ func (sc *serverConn) processFrame(f Frame) error {
 				}
 				md.HTTP2Frames.Headers = headers
 			}
-			if len(md.OrderedHTTP2Headers) == 0 {
-				for _, h := range f.Fields {
-					if strings.HasPrefix(h.Name, ":") {
-						continue
-					}
-					lower, _ := asciiToLower(h.Name)
-					md.OrderedHTTP2Headers = append(md.OrderedHTTP2Headers, lower)
-				}
-			}
 			if f.HasPriority() {
 				md.HTTP2Frames.Priorities = append(md.HTTP2Frames.Priorities,
 					metadata.Priority{

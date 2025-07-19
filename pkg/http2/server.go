@@ -611,6 +611,7 @@ type serverConn struct {
 	pushEnabled                 bool
 	sawClientPreface            bool // preface has already been read, used in h2c upgrade
 	sawFirstSettings            bool // got the initial SETTINGS frame after the preface
+	sawFirstHeaders             bool // set true after the first MetaHeadersFrame
 	needToSendSettingsAck       bool
 	unackedSettings             int    // how many SETTINGS have we sent without ACKs?
 	queuedControlFrames         int    // control frames in the writeSched queue
@@ -1626,22 +1627,14 @@ func (sc *serverConn) processFrame(f Frame) error {
 		return sc.processSettings(f)
 	case *MetaHeadersFrame:
 		if md, ok := metadata.FromContext(sc.baseCtx); ok {
-			if len(md.HTTP2Frames.Headers) == 0 {
-				headers := []metadata.HeaderField{}
-				for _, h := range f.Fields {
-					headers = append(headers, metadata.HeaderField(h))
-				}
-				md.HTTP2Frames.Headers = headers
+			headers := []metadata.HeaderField{}
+			for _, h := range f.Fields {
+				headers = append(headers, metadata.HeaderField(h))
 			}
-			if f.HasPriority() {
-				md.HTTP2Frames.Priorities = append(md.HTTP2Frames.Priorities,
-					metadata.Priority{
-						StreamId:  f.StreamID,
-						StreamDep: f.Priority.StreamDep,
-						Exclusive: f.Priority.Exclusive,
-						Weight:    f.Priority.Weight,
-					})
-			}
+			md.HTTP2Frames.Headers = headers
+		}
+		if !sc.sawFirstHeaders {
+			sc.sawFirstHeaders = true
 		}
 		return sc.processHeaders(f)
 	case *WindowUpdateFrame:
@@ -1658,13 +1651,16 @@ func (sc *serverConn) processFrame(f Frame) error {
 	case *RSTStreamFrame:
 		return sc.processResetStream(f)
 	case *PriorityFrame:
-		if md, ok := metadata.FromContext(sc.baseCtx); ok {
-			md.HTTP2Frames.Priorities = append(md.HTTP2Frames.Priorities, metadata.Priority{
-				StreamId:  f.StreamID,
-				StreamDep: f.PriorityParam.StreamDep,
-				Exclusive: f.PriorityParam.Exclusive,
-				Weight:    f.PriorityParam.Weight,
-			})
+		if !sc.sawFirstHeaders {
+			if md, ok := metadata.FromContext(sc.baseCtx); ok {
+				md.HTTP2Frames.Priorities = append(md.HTTP2Frames.Priorities,
+					metadata.Priority{
+						StreamId:  f.StreamID,
+						StreamDep: f.PriorityParam.StreamDep,
+						Exclusive: f.PriorityParam.Exclusive,
+						Weight:    f.PriorityParam.Weight,
+					})
+			}
 		}
 		return sc.processPriority(f)
 	case *GoAwayFrame:

@@ -39,6 +39,11 @@ type HTTP2FingerprintingFrames struct {
 
 	// HEADERS frame
 	Headers []HeaderField
+
+	// FirstHeadersSeen is set to true once the first HEADERS frame has been
+	// processed. It is used internally to filter PRIORITY frames so the
+	// fingerprint remains stable across requests.
+	FirstHeadersSeen bool
 }
 
 func (f *HTTP2FingerprintingFrames) String() string {

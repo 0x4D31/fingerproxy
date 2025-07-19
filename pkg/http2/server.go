@@ -1633,7 +1633,7 @@ func (sc *serverConn) processFrame(f Frame) error {
 				}
 				md.HTTP2Frames.Headers = headers
 			}
-			if f.HasPriority() {
+			if !md.HTTP2Frames.FirstHeadersSeen && f.HasPriority() && f.StreamID%2 == 1 && f.StreamID > 1 {
 				md.HTTP2Frames.Priorities = append(md.HTTP2Frames.Priorities,
 					metadata.Priority{
 						StreamId:  f.StreamID,
@@ -1642,6 +1642,7 @@ func (sc *serverConn) processFrame(f Frame) error {
 						Weight:    f.Priority.Weight,
 					})
 			}
+			md.HTTP2Frames.FirstHeadersSeen = true
 		}
 		return sc.processHeaders(f)
 	case *WindowUpdateFrame:
@@ -1659,12 +1660,14 @@ func (sc *serverConn) processFrame(f Frame) error {
 		return sc.processResetStream(f)
 	case *PriorityFrame:
 		if md, ok := metadata.FromContext(sc.baseCtx); ok {
-			md.HTTP2Frames.Priorities = append(md.HTTP2Frames.Priorities, metadata.Priority{
-				StreamId:  f.StreamID,
-				StreamDep: f.PriorityParam.StreamDep,
-				Exclusive: f.PriorityParam.Exclusive,
-				Weight:    f.PriorityParam.Weight,
-			})
+			if !md.HTTP2Frames.FirstHeadersSeen && f.StreamID%2 == 1 && f.StreamID > 1 {
+				md.HTTP2Frames.Priorities = append(md.HTTP2Frames.Priorities, metadata.Priority{
+					StreamId:  f.StreamID,
+					StreamDep: f.PriorityParam.StreamDep,
+					Exclusive: f.PriorityParam.Exclusive,
+					Weight:    f.PriorityParam.Weight,
+				})
+			}
 		}
 		return sc.processPriority(f)
 	case *GoAwayFrame:

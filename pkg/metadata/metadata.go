@@ -27,3 +27,13 @@ type Metadata struct {
 	// may appear multiple times if the client sent duplicates.
 	OrderedHTTP1Headers []string
 }
+
+// OrderedHeaders returns the HTTP header names in the order they were received.
+// If HTTP/1.x ordered headers are available they are returned directly;
+// otherwise the order is determined from captured HTTP/2 frames.
+func (m *Metadata) OrderedHeaders() []string {
+	if len(m.OrderedHTTP1Headers) > 0 {
+		return m.OrderedHTTP1Headers
+	}
+	return m.HTTP2Frames.OrderedHeaders()
+}

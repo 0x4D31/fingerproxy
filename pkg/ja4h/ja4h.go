@@ -28,6 +28,8 @@ func buildA(req *http.Request, ordered []string) string {
 	// positions 3-4: HTTP version
 	version := "11"
 	switch req.Proto {
+	case "HTTP/3.0", "HTTP/3":
+		version = "30"
 	case "HTTP/2.0", "HTTP/2":
 		version = "20"
 	case "HTTP/1.1":

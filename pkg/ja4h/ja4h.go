@@ -1,3 +1,10 @@
+// Copyright 2025 Adel "0x4D31" Ka
+// Licensed under the Apache License, Version 2.0.
+//
+// This file incorporates the JA4H fingerprinting method, which is
+// licensed under the FoxIO License 1.1 and includes certain usage
+// restrictions: https://github.com/FoxIO-LLC/ja4/blob/main/LICENSE
+
 package ja4h
 
 import (
